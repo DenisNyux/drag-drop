@@ -19,15 +19,30 @@
     // Making cart droppable
     holder.addEventListener('dragover', e => e.preventDefault());
     holder.addEventListener('drop', e => e.target.appendChild(document.getElementById(e.dataTransfer.getData('text/plain')).cloneNode(true)));
-
     // Making a removing button
-    const remove = document.createElement('button');
-    remove.appendChild(document.createTextNode('Очистить корзину'));
-    remove.id = 'remove_button'
-    remove.onclick = () => {
+    const remove_button = document.createElement('button');
+    remove_button.appendChild(document.createTextNode('Очистить корзину'));
+    remove_button.id = 'remove_button'
+    remove_button.setAttribute('class', 'stats');
+    remove_button.onclick = () => {
         while (holder.firstChild) {
             holder.removeChild(holder.firstChild);
         };
     };
-    document.getElementById('cart_section').prepend(remove)  
+    // Making a cost counter
+    let cost = 0;
+    console.log(goods)
+    goods.forEach(el => {
+        cost += Number(el.lastChild.textContent.slice(-1));
+    })
+
+    // Making a cost label
+    const cost_label = document.createElement('label');
+    cost_label.appendChild(document.createTextNode(`Cтоимость: ${cost}$`));
+    cost_label.setAttribute('class', 'stats');
+    // Making stats container
+    const stats = document.createElement('div');
+    stats.appendChild(remove_button);
+    stats.appendChild(cost_label);
+    document.getElementById('cart_section').prepend(stats);
 })();
