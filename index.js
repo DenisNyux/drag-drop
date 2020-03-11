@@ -1,13 +1,12 @@
 (async () => {
     const goods = document.querySelectorAll('.products');
     const holder = document.querySelector('#cart');
+    // Extracting prices
     const raw_prices = await fetch('https://kodaktor.ru/cart_data.json').then(x => x.text());
     const prices = JSON.parse(raw_prices);
-    console.log(prices);
 
-
+    // Making products draggable
     goods.forEach(element => {
-        // Making it draggable
         element.setAttribute('draggable', true);                                                                                                                               
         element.addEventListener('dragstart', el => el.dataTransfer.setData('text/plain', el.target.id));
         // Adding price 
@@ -16,10 +15,28 @@
         price.appendChild(document.createTextNode(prices[element.id] + '$'));
         element.appendChild(price);
     });
-    // Making cart droppable
+
+    // Declaring budget variable & it`s label
+    let budget = 500;
+    const budget_label = document.createElement('label');
+    budget_label.setAttribute('class', 'stats');
+    budget_label.appendChild(document.createTextNode(`Баланс: ${budget}$`));
+
+    // Making product to drop & price to change
     holder.addEventListener('dragover', e => e.preventDefault());
-    holder.addEventListener('drop', e => e.target.appendChild(document.getElementById(e.dataTransfer.getData('text/plain')).cloneNode(true)));
-    // Making a removing button
+    holder.addEventListener('drop', (e) => {
+        const dragging_element = document.getElementById(e.dataTransfer.getData('text/plain')).cloneNode(true);        
+        const price = Number(dragging_element.lastChild.textContent.slice(0, -1));
+        if (budget >= 0 && price <= budget) {
+            budget -= price;
+            budget_label.firstChild.textContent = `Баланс: ${budget}$`;
+            e.target.appendChild(dragging_element);
+        } else {
+            alert('Деньги кончились!')
+        }
+    });
+
+    // Removing button
     const remove_button = document.createElement('button');
     remove_button.appendChild(document.createTextNode('Очистить корзину'));
     remove_button.id = 'remove_button'
@@ -28,21 +45,13 @@
         while (holder.firstChild) {
             holder.removeChild(holder.firstChild);
         };
+        budget = 500;
+        budget_label.firstChild.textContent = `Баланс: ${budget}$`;
     };
-    // Making a cost counter
-    let cost = 0;
-    console.log(goods)
-    goods.forEach(el => {
-        cost += Number(el.lastChild.textContent.slice(-1));
-    })
-
-    // Making a cost label
-    const cost_label = document.createElement('label');
-    cost_label.appendChild(document.createTextNode(`Cтоимость: ${cost}$`));
-    cost_label.setAttribute('class', 'stats');
-    // Making stats container
+    // Container with a button & price label
     const stats = document.createElement('div');
     stats.appendChild(remove_button);
-    stats.appendChild(cost_label);
+    stats.appendChild(budget_label);
+    // Applying stats container to body
     document.getElementById('cart_section').prepend(stats);
 })();
